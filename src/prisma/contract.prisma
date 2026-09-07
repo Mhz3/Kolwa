@@ -1,0 +1,83 @@
+// use prisma-next
+enum UserRole {
+  @@type("pg/text@1")
+  ENGINEER = "ENGINEER"
+  FACILITIES_MANAGER = "FACILITIES_MANAGER"
+  COMPLIANCE = "COMPLIANCE"
+  ADMINISTRATOR = "ADMINISTRATOR"
+  SURVEYOR_READ_ONLY = "SURVEYOR_READ_ONLY"
+}
+
+enum UserStatus {
+  @@type("pg/text@1")
+  ACTIVE = "ACTIVE"
+  INACTIVE = "INACTIVE"
+}
+
+enum AssetStatus {
+  @@type("pg/text@1")
+  ACTIVE = "ACTIVE"
+  INACTIVE = "INACTIVE"
+  OUT_OF_SERVICE = "OUT_OF_SERVICE"
+  RETIRED = "RETIRED"
+}
+
+model Facility {
+  id        Uuid                 @id @default(uuid())
+  code      String               @unique
+  name      String
+  type      String?
+  city      String?
+  state     String?
+  timezone  String               @default("America/Los_Angeles")
+  status    String               @default("ACTIVE")
+
+  users     User[]
+  assets    Asset[]
+
+  createdAt DateTime             @default(now())
+  updatedAt temporal.updatedAt()
+}
+
+model User {
+  id         Uuid                 @id @default(uuid())
+  firstName  String
+  lastName   String
+  email      String               @unique
+  role       UserRole
+  department String?
+  status     UserStatus           @default(ACTIVE)
+
+  facilityId Uuid
+  facility   Facility             @relation(fields:[facilityId], references:[id])
+
+  createdAt  DateTime             @default(now())
+  updatedAt  temporal.updatedAt()
+
+  @@index([facilityId])
+  @@index([role])
+}
+
+model Asset {
+  id             Uuid                 @id @default(uuid())
+  assetCode      String
+  name           String
+  category       String
+  location       String?
+  manufacturer   String?
+  model          String?
+  serialNumber   String?
+  externalCmmsId String?
+  status         AssetStatus          @default(ACTIVE)
+
+  facilityId     Uuid
+  facility       Facility             @relation(fields:[facilityId], references:[id])
+
+  createdAt      DateTime             @default(now())
+  updatedAt      temporal.updatedAt()
+
+  @@unique([facilityId, assetCode])
+  @@index([facilityId])
+  @@index([category])
+  @@index([externalCmmsId])
+}
