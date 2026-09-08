@@ -1,4 +1,5 @@
 // use prisma-next
+
 enum UserRole {
   @@type("pg/text@1")
   ENGINEER = "ENGINEER"
@@ -32,27 +33,28 @@ model Facility {
   timezone  String               @default("America/Los_Angeles")
   status    String               @default("ACTIVE")
 
-  users     User[]
-  assets    Asset[]
-
+  users               User[]
+  assets              Asset[]
+  inspectionTemplates InspectionTemplate[]
+  inspections         Inspection[]
   createdAt DateTime             @default(now())
   updatedAt temporal.updatedAt()
 }
 
 model User {
-  id         Uuid                 @id @default(uuid())
-  firstName  String
-  lastName   String
-  email      String               @unique
-  role       UserRole
-  department String?
-  status     UserStatus           @default(ACTIVE)
+  id          Uuid                 @id @default(uuid())
+  firstName   String
+  lastName    String
+  email       String               @unique
+  role        UserRole
+  department  String?
+  status      UserStatus           @default(ACTIVE)
+  inspections Inspection[]
+  facilityId  Uuid
+  facility    Facility             @relation(fields:[facilityId], references:[id])
 
-  facilityId Uuid
-  facility   Facility             @relation(fields:[facilityId], references:[id])
-
-  createdAt  DateTime             @default(now())
-  updatedAt  temporal.updatedAt()
+  createdAt   DateTime             @default(now())
+  updatedAt   temporal.updatedAt()
 
   @@index([facilityId])
   @@index([role])
@@ -69,7 +71,7 @@ model Asset {
   serialNumber   String?
   externalCmmsId String?
   status         AssetStatus          @default(ACTIVE)
-
+  inspections    Inspection[]
   facilityId     Uuid
   facility       Facility             @relation(fields:[facilityId], references:[id])
 
@@ -80,4 +82,85 @@ model Asset {
   @@index([facilityId])
   @@index([category])
   @@index([externalCmmsId])
+
+}
+enum InspectionTemplateStatus {
+  @@type("pg/text@1")
+  ACTIVE   = "ACTIVE"
+  INACTIVE = "INACTIVE"
+}
+
+model InspectionTemplate {
+  id          Uuid                     @id @default(uuid())
+  code        String
+  name        String
+  description String?
+  status      InspectionTemplateStatus @default(ACTIVE)
+  inspections Inspection[]
+  facilityId  Uuid
+  facility    Facility @relation(fields: [facilityId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   temporal.updatedAt()
+
+  @@unique([facilityId, code])
+  @@index([facilityId])
+  items InspectionTemplateItem[]
+}
+
+model InspectionTemplateItem {
+  id          Uuid   @id @default(uuid())
+  question    String
+  description String?
+  sortOrder   Int
+  required    Boolean @default(true)
+
+  templateId Uuid
+  template   InspectionTemplate @relation(fields: [templateId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt temporal.updatedAt()
+
+  @@index([templateId])
+  @@unique([templateId, sortOrder])
+}
+
+enum InspectionStatus {
+  @@type("pg/text@1")
+  DRAFT       = "DRAFT"
+  IN_PROGRESS = "IN_PROGRESS"
+  COMPLETED   = "COMPLETED"
+  VOIDED      = "VOIDED"
+}
+
+model Inspection {
+  id             Uuid             @id @default(uuid())
+  inspectionCode String
+  status         InspectionStatus @default(DRAFT)
+
+  startedAt   DateTime?
+  completedAt DateTime?
+  notes       String?
+
+  facilityId Uuid
+  facility   Facility @relation(fields: [facilityId], references: [id])
+
+  assetId Uuid
+  asset   Asset @relation(fields: [assetId], references: [id])
+
+  templateId Uuid
+  template   InspectionTemplate @relation(fields: [templateId], references: [id])
+
+  inspectorId Uuid
+  inspector   User @relation(fields: [inspectorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt temporal.updatedAt()
+
+  @@unique([facilityId, inspectionCode])
+  @@index([facilityId])
+  @@index([assetId])
+  @@index([templateId])
+  @@index([inspectorId])
+  @@index([status])
 }
