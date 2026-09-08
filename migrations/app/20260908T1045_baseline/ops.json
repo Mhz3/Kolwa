@@ -1,0 +1,1309 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.asset",
+    "label": "Create table \"asset\"",
+    "summary": "Creates table \"asset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "asset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"asset\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"asset\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"asset\"",
+        "sql": "CREATE TABLE \"public\".\"asset\" (\n  \"assetCode\" text NOT NULL,\n  \"category\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"externalCmmsId\" text,\n  \"facilityId\" uuid NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"location\" text,\n  \"manufacturer\" text,\n  \"model\" text,\n  \"name\" text NOT NULL,\n  \"serialNumber\" text,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"asset_status_check_f6d74c14\" CHECK (\"status\" IN ('ACTIVE', 'INACTIVE', 'OUT_OF_SERVICE', 'RETIRED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"asset\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"asset\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.facility",
+    "label": "Create table \"facility\"",
+    "summary": "Creates table \"facility\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "facility"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"facility\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"facility\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"facility\"",
+        "sql": "CREATE TABLE \"public\".\"facility\" (\n  \"city\" text,\n  \"code\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"name\" text NOT NULL,\n  \"state\" text,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"timezone\" text DEFAULT 'America/Los_Angeles' NOT NULL,\n  \"type\" text,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"facility\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"facility\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.inspection",
+    "label": "Create table \"inspection\"",
+    "summary": "Creates table \"inspection\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "inspection"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"inspection\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspection\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"inspection\"",
+        "sql": "CREATE TABLE \"public\".\"inspection\" (\n  \"assetId\" uuid NOT NULL,\n  \"completedAt\" timestamptz,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"facilityId\" uuid NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"inspectionCode\" text NOT NULL,\n  \"inspectorId\" uuid NOT NULL,\n  \"notes\" text,\n  \"startedAt\" timestamptz,\n  \"status\" text DEFAULT 'DRAFT' NOT NULL,\n  \"templateId\" uuid NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"inspection_status_check_3f0e10db\" CHECK (\"status\" IN ('DRAFT', 'IN_PROGRESS', 'COMPLETED', 'VOIDED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"inspection\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspection\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.inspectionTemplate",
+    "label": "Create table \"inspectionTemplate\"",
+    "summary": "Creates table \"inspectionTemplate\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "inspectionTemplate"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"inspectionTemplate\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspectionTemplate\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"inspectionTemplate\"",
+        "sql": "CREATE TABLE \"public\".\"inspectionTemplate\" (\n  \"code\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"facilityId\" uuid NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"name\" text NOT NULL,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"inspectionTemplate_status_check_ee520df2\" CHECK (\"status\" IN ('ACTIVE', 'INACTIVE'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"inspectionTemplate\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspectionTemplate\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.inspectionTemplateItem",
+    "label": "Create table \"inspectionTemplateItem\"",
+    "summary": "Creates table \"inspectionTemplateItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "inspectionTemplateItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"inspectionTemplateItem\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspectionTemplateItem\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"inspectionTemplateItem\"",
+        "sql": "CREATE TABLE \"public\".\"inspectionTemplateItem\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" uuid NOT NULL,\n  \"question\" text NOT NULL,\n  \"required\" bool DEFAULT true NOT NULL,\n  \"sortOrder\" int4 NOT NULL,\n  \"templateId\" uuid NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"inspectionTemplateItem\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspectionTemplateItem\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.user",
+    "label": "Create table \"user\"",
+    "summary": "Creates table \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"user\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"user\"",
+        "sql": "CREATE TABLE \"public\".\"user\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"department\" text,\n  \"email\" text NOT NULL,\n  \"facilityId\" uuid NOT NULL,\n  \"firstName\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"lastName\" text NOT NULL,\n  \"role\" text NOT NULL,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"user_role_check_1289e0c7\" CHECK (\"role\" IN ('ENGINEER', 'FACILITIES_MANAGER', 'COMPLIANCE', 'ADMINISTRATOR', 'SURVEYOR_READ_ONLY')),\n  CONSTRAINT \"user_status_check_ee520df2\" CHECK (\"status\" IN ('ACTIVE', 'INACTIVE'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"user\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.asset.asset_facilityId_assetCode_key",
+    "label": "Add unique constraint on \"asset\" (facilityId, assetCode)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "asset_facilityId_assetCode_key",
+        "table": "asset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"asset_facilityId_assetCode_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "asset_facilityId_assetCode_key",
+          "public",
+          "\"public\".\"asset\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"asset_facilityId_assetCode_key\"",
+        "sql": "ALTER TABLE \"public\".\"asset\" ADD CONSTRAINT \"asset_facilityId_assetCode_key\" UNIQUE (\"facilityId\", \"assetCode\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"asset_facilityId_assetCode_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "asset_facilityId_assetCode_key",
+          "public",
+          "\"public\".\"asset\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.facility.facility_code_key",
+    "label": "Add unique constraint on \"facility\" (code)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "facility_code_key",
+        "table": "facility"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"facility_code_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "facility_code_key",
+          "public",
+          "\"public\".\"facility\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"facility_code_key\"",
+        "sql": "ALTER TABLE \"public\".\"facility\" ADD CONSTRAINT \"facility_code_key\" UNIQUE (\"code\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"facility_code_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "facility_code_key",
+          "public",
+          "\"public\".\"facility\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.inspection.inspection_facilityId_inspectionCode_key",
+    "label": "Add unique constraint on \"inspection\" (facilityId, inspectionCode)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "inspection_facilityId_inspectionCode_key",
+        "table": "inspection"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"inspection_facilityId_inspectionCode_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inspection_facilityId_inspectionCode_key",
+          "public",
+          "\"public\".\"inspection\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"inspection_facilityId_inspectionCode_key\"",
+        "sql": "ALTER TABLE \"public\".\"inspection\" ADD CONSTRAINT \"inspection_facilityId_inspectionCode_key\" UNIQUE (\"facilityId\", \"inspectionCode\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"inspection_facilityId_inspectionCode_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inspection_facilityId_inspectionCode_key",
+          "public",
+          "\"public\".\"inspection\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.inspectionTemplate.inspectionTemplate_facilityId_code_key",
+    "label": "Add unique constraint on \"inspectionTemplate\" (facilityId, code)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "inspectionTemplate_facilityId_code_key",
+        "table": "inspectionTemplate"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"inspectionTemplate_facilityId_code_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inspectionTemplate_facilityId_code_key",
+          "public",
+          "\"public\".\"inspectionTemplate\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"inspectionTemplate_facilityId_code_key\"",
+        "sql": "ALTER TABLE \"public\".\"inspectionTemplate\" ADD CONSTRAINT \"inspectionTemplate_facilityId_code_key\" UNIQUE (\"facilityId\", \"code\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"inspectionTemplate_facilityId_code_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inspectionTemplate_facilityId_code_key",
+          "public",
+          "\"public\".\"inspectionTemplate\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.inspectionTemplateItem.inspectionTemplateItem_templateId_sortOrder_key",
+    "label": "Add unique constraint on \"inspectionTemplateItem\" (templateId, sortOrder)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "inspectionTemplateItem_templateId_sortOrder_key",
+        "table": "inspectionTemplateItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"inspectionTemplateItem_templateId_sortOrder_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inspectionTemplateItem_templateId_sortOrder_key",
+          "public",
+          "\"public\".\"inspectionTemplateItem\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"inspectionTemplateItem_templateId_sortOrder_key\"",
+        "sql": "ALTER TABLE \"public\".\"inspectionTemplateItem\" ADD CONSTRAINT \"inspectionTemplateItem_templateId_sortOrder_key\" UNIQUE (\"templateId\", \"sortOrder\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"inspectionTemplateItem_templateId_sortOrder_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inspectionTemplateItem_templateId_sortOrder_key",
+          "public",
+          "\"public\".\"inspectionTemplateItem\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.user.user_email_key",
+    "label": "Add unique constraint on \"user\" (email)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "user_email_key",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"user_email_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_email_key",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"user_email_key\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD CONSTRAINT \"user_email_key\" UNIQUE (\"email\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"user_email_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_email_key",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.asset.asset_category_idx_f2600f8e",
+    "label": "Create index \"asset_category_idx_f2600f8e\" on \"asset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "asset_category_idx_f2600f8e",
+        "table": "asset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"asset_category_idx_f2600f8e\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"asset_category_idx_f2600f8e\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"asset_category_idx_f2600f8e\"",
+        "sql": "CREATE INDEX \"asset_category_idx_f2600f8e\" ON \"public\".\"asset\" (\"category\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"asset_category_idx_f2600f8e\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"asset_category_idx_f2600f8e\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.asset.asset_externalCmmsId_idx_53de8615",
+    "label": "Create index \"asset_externalCmmsId_idx_53de8615\" on \"asset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "asset_externalCmmsId_idx_53de8615",
+        "table": "asset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"asset_externalCmmsId_idx_53de8615\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"asset_externalCmmsId_idx_53de8615\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"asset_externalCmmsId_idx_53de8615\"",
+        "sql": "CREATE INDEX \"asset_externalCmmsId_idx_53de8615\" ON \"public\".\"asset\" (\"externalCmmsId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"asset_externalCmmsId_idx_53de8615\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"asset_externalCmmsId_idx_53de8615\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.asset.asset_facilityId_idx_3710d8c1",
+    "label": "Create index \"asset_facilityId_idx_3710d8c1\" on \"asset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "asset_facilityId_idx_3710d8c1",
+        "table": "asset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"asset_facilityId_idx_3710d8c1\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"asset_facilityId_idx_3710d8c1\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"asset_facilityId_idx_3710d8c1\"",
+        "sql": "CREATE INDEX \"asset_facilityId_idx_3710d8c1\" ON \"public\".\"asset\" (\"facilityId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"asset_facilityId_idx_3710d8c1\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"asset_facilityId_idx_3710d8c1\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.inspection.inspection_assetId_idx_4ebe630a",
+    "label": "Create index \"inspection_assetId_idx_4ebe630a\" on \"inspection\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "inspection_assetId_idx_4ebe630a",
+        "table": "inspection"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"inspection_assetId_idx_4ebe630a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspection_assetId_idx_4ebe630a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"inspection_assetId_idx_4ebe630a\"",
+        "sql": "CREATE INDEX \"inspection_assetId_idx_4ebe630a\" ON \"public\".\"inspection\" (\"assetId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"inspection_assetId_idx_4ebe630a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspection_assetId_idx_4ebe630a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.inspection.inspection_facilityId_idx_3710d8c1",
+    "label": "Create index \"inspection_facilityId_idx_3710d8c1\" on \"inspection\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "inspection_facilityId_idx_3710d8c1",
+        "table": "inspection"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"inspection_facilityId_idx_3710d8c1\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspection_facilityId_idx_3710d8c1\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"inspection_facilityId_idx_3710d8c1\"",
+        "sql": "CREATE INDEX \"inspection_facilityId_idx_3710d8c1\" ON \"public\".\"inspection\" (\"facilityId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"inspection_facilityId_idx_3710d8c1\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspection_facilityId_idx_3710d8c1\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.inspection.inspection_inspectorId_idx_4d86e86c",
+    "label": "Create index \"inspection_inspectorId_idx_4d86e86c\" on \"inspection\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "inspection_inspectorId_idx_4d86e86c",
+        "table": "inspection"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"inspection_inspectorId_idx_4d86e86c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspection_inspectorId_idx_4d86e86c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"inspection_inspectorId_idx_4d86e86c\"",
+        "sql": "CREATE INDEX \"inspection_inspectorId_idx_4d86e86c\" ON \"public\".\"inspection\" (\"inspectorId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"inspection_inspectorId_idx_4d86e86c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspection_inspectorId_idx_4d86e86c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.inspection.inspection_status_idx_e98638ab",
+    "label": "Create index \"inspection_status_idx_e98638ab\" on \"inspection\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "inspection_status_idx_e98638ab",
+        "table": "inspection"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"inspection_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspection_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"inspection_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"inspection_status_idx_e98638ab\" ON \"public\".\"inspection\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"inspection_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspection_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.inspection.inspection_templateId_idx_19e0d972",
+    "label": "Create index \"inspection_templateId_idx_19e0d972\" on \"inspection\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "inspection_templateId_idx_19e0d972",
+        "table": "inspection"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"inspection_templateId_idx_19e0d972\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspection_templateId_idx_19e0d972\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"inspection_templateId_idx_19e0d972\"",
+        "sql": "CREATE INDEX \"inspection_templateId_idx_19e0d972\" ON \"public\".\"inspection\" (\"templateId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"inspection_templateId_idx_19e0d972\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspection_templateId_idx_19e0d972\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.inspectionTemplate.inspectionTemplate_facilityId_idx_3710d8c1",
+    "label": "Create index \"inspectionTemplate_facilityId_idx_3710d8c1\" on \"inspectionTemplate\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "inspectionTemplate_facilityId_idx_3710d8c1",
+        "table": "inspectionTemplate"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"inspectionTemplate_facilityId_idx_3710d8c1\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspectionTemplate_facilityId_idx_3710d8c1\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"inspectionTemplate_facilityId_idx_3710d8c1\"",
+        "sql": "CREATE INDEX \"inspectionTemplate_facilityId_idx_3710d8c1\" ON \"public\".\"inspectionTemplate\" (\"facilityId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"inspectionTemplate_facilityId_idx_3710d8c1\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspectionTemplate_facilityId_idx_3710d8c1\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.inspectionTemplateItem.inspectionTemplateItem_templateId_idx_19e0d972",
+    "label": "Create index \"inspectionTemplateItem_templateId_idx_19e0d972\" on \"inspectionTemplateItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "inspectionTemplateItem_templateId_idx_19e0d972",
+        "table": "inspectionTemplateItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"inspectionTemplateItem_templateId_idx_19e0d972\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspectionTemplateItem_templateId_idx_19e0d972\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"inspectionTemplateItem_templateId_idx_19e0d972\"",
+        "sql": "CREATE INDEX \"inspectionTemplateItem_templateId_idx_19e0d972\" ON \"public\".\"inspectionTemplateItem\" (\"templateId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"inspectionTemplateItem_templateId_idx_19e0d972\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inspectionTemplateItem_templateId_idx_19e0d972\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.user.user_facilityId_idx_3710d8c1",
+    "label": "Create index \"user_facilityId_idx_3710d8c1\" on \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "user_facilityId_idx_3710d8c1",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"user_facilityId_idx_3710d8c1\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user_facilityId_idx_3710d8c1\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"user_facilityId_idx_3710d8c1\"",
+        "sql": "CREATE INDEX \"user_facilityId_idx_3710d8c1\" ON \"public\".\"user\" (\"facilityId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"user_facilityId_idx_3710d8c1\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user_facilityId_idx_3710d8c1\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.user.user_role_idx_2c1ddf83",
+    "label": "Create index \"user_role_idx_2c1ddf83\" on \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "user_role_idx_2c1ddf83",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"user_role_idx_2c1ddf83\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user_role_idx_2c1ddf83\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"user_role_idx_2c1ddf83\"",
+        "sql": "CREATE INDEX \"user_role_idx_2c1ddf83\" ON \"public\".\"user\" (\"role\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"user_role_idx_2c1ddf83\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user_role_idx_2c1ddf83\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.asset.asset_facilityId_fkey",
+    "label": "Add foreign key \"asset_facilityId_fkey\" on \"asset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "asset_facilityId_fkey",
+        "table": "asset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"asset_facilityId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "asset_facilityId_fkey",
+          "public",
+          "\"public\".\"asset\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"asset_facilityId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"asset\"\nADD CONSTRAINT \"asset_facilityId_fkey\"\nFOREIGN KEY (\"facilityId\")\nREFERENCES \"public\".\"facility\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"asset_facilityId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "asset_facilityId_fkey",
+          "public",
+          "\"public\".\"asset\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.inspection.inspection_facilityId_fkey",
+    "label": "Add foreign key \"inspection_facilityId_fkey\" on \"inspection\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "inspection_facilityId_fkey",
+        "table": "inspection"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"inspection_facilityId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inspection_facilityId_fkey",
+          "public",
+          "\"public\".\"inspection\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"inspection_facilityId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"inspection\"\nADD CONSTRAINT \"inspection_facilityId_fkey\"\nFOREIGN KEY (\"facilityId\")\nREFERENCES \"public\".\"facility\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"inspection_facilityId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inspection_facilityId_fkey",
+          "public",
+          "\"public\".\"inspection\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.inspection.inspection_assetId_fkey",
+    "label": "Add foreign key \"inspection_assetId_fkey\" on \"inspection\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "inspection_assetId_fkey",
+        "table": "inspection"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"inspection_assetId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inspection_assetId_fkey",
+          "public",
+          "\"public\".\"inspection\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"inspection_assetId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"inspection\"\nADD CONSTRAINT \"inspection_assetId_fkey\"\nFOREIGN KEY (\"assetId\")\nREFERENCES \"public\".\"asset\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"inspection_assetId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inspection_assetId_fkey",
+          "public",
+          "\"public\".\"inspection\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.inspection.inspection_templateId_fkey",
+    "label": "Add foreign key \"inspection_templateId_fkey\" on \"inspection\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "inspection_templateId_fkey",
+        "table": "inspection"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"inspection_templateId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inspection_templateId_fkey",
+          "public",
+          "\"public\".\"inspection\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"inspection_templateId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"inspection\"\nADD CONSTRAINT \"inspection_templateId_fkey\"\nFOREIGN KEY (\"templateId\")\nREFERENCES \"public\".\"inspectionTemplate\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"inspection_templateId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inspection_templateId_fkey",
+          "public",
+          "\"public\".\"inspection\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.inspection.inspection_inspectorId_fkey",
+    "label": "Add foreign key \"inspection_inspectorId_fkey\" on \"inspection\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "inspection_inspectorId_fkey",
+        "table": "inspection"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"inspection_inspectorId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inspection_inspectorId_fkey",
+          "public",
+          "\"public\".\"inspection\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"inspection_inspectorId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"inspection\"\nADD CONSTRAINT \"inspection_inspectorId_fkey\"\nFOREIGN KEY (\"inspectorId\")\nREFERENCES \"public\".\"user\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"inspection_inspectorId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inspection_inspectorId_fkey",
+          "public",
+          "\"public\".\"inspection\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.inspectionTemplate.inspectionTemplate_facilityId_fkey",
+    "label": "Add foreign key \"inspectionTemplate_facilityId_fkey\" on \"inspectionTemplate\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "inspectionTemplate_facilityId_fkey",
+        "table": "inspectionTemplate"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"inspectionTemplate_facilityId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inspectionTemplate_facilityId_fkey",
+          "public",
+          "\"public\".\"inspectionTemplate\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"inspectionTemplate_facilityId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"inspectionTemplate\"\nADD CONSTRAINT \"inspectionTemplate_facilityId_fkey\"\nFOREIGN KEY (\"facilityId\")\nREFERENCES \"public\".\"facility\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"inspectionTemplate_facilityId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inspectionTemplate_facilityId_fkey",
+          "public",
+          "\"public\".\"inspectionTemplate\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.inspectionTemplateItem.inspectionTemplateItem_templateId_fkey",
+    "label": "Add foreign key \"inspectionTemplateItem_templateId_fkey\" on \"inspectionTemplateItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "inspectionTemplateItem_templateId_fkey",
+        "table": "inspectionTemplateItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"inspectionTemplateItem_templateId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inspectionTemplateItem_templateId_fkey",
+          "public",
+          "\"public\".\"inspectionTemplateItem\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"inspectionTemplateItem_templateId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"inspectionTemplateItem\"\nADD CONSTRAINT \"inspectionTemplateItem_templateId_fkey\"\nFOREIGN KEY (\"templateId\")\nREFERENCES \"public\".\"inspectionTemplate\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"inspectionTemplateItem_templateId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inspectionTemplateItem_templateId_fkey",
+          "public",
+          "\"public\".\"inspectionTemplateItem\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.user.user_facilityId_fkey",
+    "label": "Add foreign key \"user_facilityId_fkey\" on \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "user_facilityId_fkey",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"user_facilityId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_facilityId_fkey",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"user_facilityId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"user\"\nADD CONSTRAINT \"user_facilityId_fkey\"\nFOREIGN KEY (\"facilityId\")\nREFERENCES \"public\".\"facility\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"user_facilityId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_facilityId_fkey",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ]
+  }
+]
